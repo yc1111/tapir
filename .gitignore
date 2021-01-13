@@ -9,6 +9,7 @@ store/benchmark/terminalClient
 store/strongstore/server
 store/tapirstore/server
 store/weakstore/server
+store/tools/keys
 timeserver/timeserver
 
 lib/tests/configuration-test
@@ -73,3 +74,5 @@ tags
 *.exe
 *.out
 *.app
+
+logs/

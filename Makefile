@@ -33,7 +33,7 @@ LDFLAGS += $(LIBSSL_LDFLAGS)
 
 
 # Google test framework. This doesn't use pkgconfig
-GTEST_DIR := /usr/src/gtest
+GTEST_DIR := /users/yc/libs/googletest-release-1.10.0
 
 # Additional flags
 PARANOID = 1
@@ -71,8 +71,8 @@ else
 trace = @printf "+ %-6s " $(1) ; echo $(2) ; $(3)
 Q = @
 endif
-GTEST := .obj/gtest/gtest.a
-GTEST_MAIN := .obj/gtest/gtest_main.a
+# GTEST := .obj/gtest/gtest.a
+# GTEST_MAIN := .obj/gtest/gtest_main.a
 
 ##################################################################
 # Sub-directories
