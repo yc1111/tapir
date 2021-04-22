@@ -101,23 +101,31 @@ Server::LeaderUpcall(opnum_t opnum, const string &str1, bool &replicate, string 
             replicate = true;
             // get a prepare timestamp and send along to replicas
             if (mode == MODE_SPAN_LOCK || mode == MODE_SPAN_OCC) {
-                request.mutable_prepare()->set_timestamp(timeServer.GetTime());
+                // request.mutable_prepare()->set_timestamp(timeServer.GetTime());
+                reply.set_timestamp(timeServer.GetTime());
             }
-            request.SerializeToString(&str2);
+            //request.SerializeToString(&str2);
         } else {
             // if abort, don't replicate
             replicate = false;
             reply.set_status(status);
-            reply.SerializeToString(&str2);
+            //reply.SerializeToString(&str2);
         }
+        reply.SerializeToString(&str2);
         break;
     case strongstore::proto::Request::COMMIT:
         replicate = true;
-        str2 = str1;
+        // str2 = str1;
+        store->Commit(request.txnid(), request.commit().timestamp());
+        reply.set_status(status);
+        reply.SerializeToString(&str2);
         break;
     case strongstore::proto::Request::ABORT:
         replicate = true;
-        str2 = str1;
+        // str2 = str1;
+        store->Abort(request.txnid(), Transaction(request.abort().txn()));
+        reply.set_status(status);
+        reply.SerializeToString(&str2);
         break;
     default:
         Panic("Unrecognized operation.");

@@ -469,31 +469,41 @@ VRReplica::HandleRequest(const TransportAddress &remote,
         cte.reply = reply;
         transport->SendMessage(this, remote, reply);
     } else {
-        Request request;
-        request.set_op(res);
-        request.set_clientid(msg.req().clientid());
-        request.set_clientreqid(msg.req().clientreqid());
-    
-        /* Assign it an opnum */
+        ReplyMessage reply;
         ++this->lastOp;
-        v.view = this->view;
-        v.opnum = this->lastOp;
+        reply.set_view(this->view);
+        reply.set_opnum(this->lastOp);
+        reply.set_clientreqid(msg.req().clientreqid());
+        cte.replied = true;
+        cte.reply = reply;
+        transport->SendMessage(this, remote, reply);
 
-        RDebug("Received REQUEST, assigning " FMT_VIEWSTAMP, VA_VIEWSTAMP(v));
 
-        /* Add the request to my log */
-        log.Append(v, request, LOG_STATE_PREPARED);
+        // Request request;
+        // request.set_op(res);
+        // request.set_clientid(msg.req().clientid());
+        // request.set_clientreqid(msg.req().clientreqid());
+    
+        // /* Assign it an opnum */
+        // ++this->lastOp;
+        // v.view = this->view;
+        // v.opnum = this->lastOp;
 
-        if (lastOp - lastBatchEnd+1 > batchSize) {
-            CloseBatch();
-        } else {
-            RDebug("Keeping in batch");
-            if (!closeBatchTimeout->Active()) {
-                closeBatchTimeout->Start();
-            }
-        }
+        // RDebug("Received REQUEST, assigning " FMT_VIEWSTAMP, VA_VIEWSTAMP(v));
 
-        nullCommitTimeout->Reset();
+        // /* Add the request to my log */
+        // log.Append(v, request, LOG_STATE_PREPARED);
+
+        // if (lastOp - lastBatchEnd+1 > batchSize) {
+        //     CloseBatch();
+        // } else {
+        //     RDebug("Keeping in batch");
+        //     if (!closeBatchTimeout->Active()) {
+        //         closeBatchTimeout->Start();
+        //     }
+        // }
+
+        // nullCommitTimeout->Reset();
     }
 }
 
