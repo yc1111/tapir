@@ -471,6 +471,7 @@ VRReplica::HandleRequest(const TransportAddress &remote,
     } else {
         ReplyMessage reply;
         ++this->lastOp;
+        reply.set_reply(res);
         reply.set_view(this->view);
         reply.set_opnum(this->lastOp);
         reply.set_clientreqid(msg.req().clientreqid());
