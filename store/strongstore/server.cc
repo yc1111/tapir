@@ -66,7 +66,7 @@ Server::LeaderUpcall(opnum_t opnum, const string &str1, bool &replicate, string 
 
     Request request;
     Reply reply;
-    int status;
+    int status = 0;
     
     request.ParseFromString(str1);
 
@@ -108,9 +108,10 @@ Server::LeaderUpcall(opnum_t opnum, const string &str1, bool &replicate, string 
         } else {
             // if abort, don't replicate
             replicate = false;
-            reply.set_status(status);
+            //reply.set_status(status);
             //reply.SerializeToString(&str2);
         }
+        reply.set_status(status);
         reply.SerializeToString(&str2);
         break;
     case strongstore::proto::Request::COMMIT:

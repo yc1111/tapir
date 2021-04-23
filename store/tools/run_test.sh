@@ -19,26 +19,28 @@ trap '{
 srcdir="/data/yc/tapir"
 logdir="/data/yc/tapir/logs"
 
+mkdir -p $logdir
+
 # Machines on which replicas are running.
-replicas=("10.0.0.40" "10.0.0.41" "10.0.0.43")
+replicas=`cat replicas`
 
 # Machines on which clients are running.
-clients=("10.0.0.40")
+clients=("10.0.0.80")
 
 client="benchClient"    # Which client (benchClient, retwisClient, etc)
 store="strongstore"      # Which store (strongstore, weakstore, tapirstore)
 mode="occ"            # Mode for storage system.
 
-nshard=3     # number of shards
-nclient=10    # number of clients to run (per machine)
+nshard=1     # number of shards
+nclient=8    # number of clients to run (per machine)
 nkeys=100000 # number of keys to use
-rtime=10     # duration to run
+rtime=120     # duration to run
 
-tlen=2       # transaction length
-wper=1       # writes percentage
+tlen=10       # transaction length
+wper=20       # writes percentage
 err=0        # error
 skew=0       # skew
-zalpha=-1    # zipf alpha (-1 to disable zipf and enable uniform)
+zalpha=0    # zipf alpha (-1 to disable zipf and enable uniform)
 
 # Print out configuration being used.
 echo "Configuration:"
@@ -57,11 +59,6 @@ echo "Store: $store"
 echo "Mode: $mode"
 
 
-# Generate keys to be used in the experiment.
-echo "Generating random keys.."
-python key_generator.py $nkeys > keys
-
-
 # Start all replicas and timestamp servers
 echo "Starting TimeStampServer replicas.."
 $srcdir/store/tools/start_replica.sh tss $srcdir/store/tools/shard.tss.config \
@@ -76,7 +73,7 @@ done
 
 
 # Wait a bit for all replicas to start up
-sleep 2
+sleep 5
 
 
 # Run the clients
@@ -84,7 +81,7 @@ echo "Running the client(s)"
 count=0
 for host in ${clients[@]}
 do
-  ssh $host "source ~/.profile; $srcdir/store/tools/start_client.sh \"$srcdir/store/benchmark/$client \
+  ssh $host "source ~/.profile; mkdir -p $logdir; $srcdir/store/tools/start_client.sh \"$srcdir/store/benchmark/$client \
   -c $srcdir/store/tools/shard -N $nshard -f $srcdir/store/tools/keys \
   -d $rtime -l $tlen -w $wper -k $nkeys -m $mode -e $err -s $skew -z $zalpha\" \
   $count $nclient $logdir"
@@ -115,4 +112,6 @@ echo "Processing logs"
 cat $logdir/client.*.log | sort -g -k 3 > $logdir/client.log
 rm -f $logdir/client.*.log
 
-python $srcdir/store/tools/process_logs.py $logdir/client.log $rtime
+mkdir -p $srcdir/data
+OUTFILE=$srcdir/data/${wper}_${nshard}_${nclient}
+python $srcdir/store/tools/process_logs.py $logdir/client.log $rtime $OUTFILE

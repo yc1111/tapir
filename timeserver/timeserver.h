@@ -24,6 +24,8 @@ public:
     TimeStampServer();
     ~TimeStampServer();
 
+    void LeaderUpcall(opnum_t opnum, const string &str1, bool &replicate,
+                      string &str2);
     void ReplicaUpcall(opnum_t opnum, const string &str1, string &str2);
 
 private:

@@ -3,6 +3,7 @@ import sys
 start, end = -1.0, -1.0
 
 duration = float(sys.argv[2])
+print(duration)
 warmup = duration/3.0
 
 tLatency = []
@@ -65,19 +66,26 @@ tLatency.sort()
 sLatency.sort()
 fLatency.sort()
 
-print "Transactions(All/Success): ", len(tLatency), len(sLatency)
-print "Abort Rate: ", (float)(len(tLatency)-len(sLatency))/len(tLatency)
-print "Throughput (All/Success): ", len(tLatency)/(end-start), len(sLatency)/(end-start)
-print "Average Latency (all): ", sum(tLatency)/float(len(tLatency))
-print "Median  Latency (all): ", tLatency[len(tLatency)/2]
-print "99%tile Latency (all): ", tLatency[(len(tLatency) * 99)/100]
-print "Average Latency (success): ", sum(sLatency)/float(len(sLatency))
-print "Median  Latency (success): ", sLatency[len(sLatency)/2]
-print "99%tile Latency (success): ", sLatency[(len(sLatency) * 99)/100]
-print "Extra (all): ", tExtra
-print "Extra (success): ", sExtra
-if len(xLatency) > 0:
-  print "X Transaction Latency: ", sum(xLatency)/float(len(xLatency))
-if len(fLatency) > 0:
-  print "Average Latency (failure): ", sum(fLatency)/float(len(tLatency)-len(sLatency))
-  print "Extra (failure): ", fExtra
+outfile = open(sys.argv[3], "w")
+outfile.write(str(len(sLatency)/(end-start)) + "\n")
+outfile.write(str(sum(sLatency)/float(len(sLatency))) + "\n")
+outfile.write(str(len(tLatency)/(end-start)) + "\n")
+outfile.write(str(sum(tLatency)/float(len(tLatency))) + "\n")
+outfile.write(str(len(tLatency)) + " " + str(len(sLatency)) + "\n")
+print(str(end-start))
+# print "Transactions(All/Success): ", len(tLatency), len(sLatency)
+# print "Abort Rate: ", (float)(len(tLatency)-len(sLatency))/len(tLatency)
+# print "Throughput (All/Success): ", len(tLatency)/(end-start), len(sLatency)/(end-start)
+# print "Average Latency (all): ", sum(tLatency)/float(len(tLatency))
+# print "Median  Latency (all): ", tLatency[len(tLatency)/2]
+# print "99%tile Latency (all): ", tLatency[(len(tLatency) * 99)/100]
+# print "Average Latency (success): ", sum(sLatency)/float(len(sLatency))
+# print "Median  Latency (success): ", sLatency[len(sLatency)/2]
+# print "99%tile Latency (success): ", sLatency[(len(sLatency) * 99)/100]
+# print "Extra (all): ", tExtra
+# print "Extra (success): ", sExtra
+# if len(xLatency) > 0:
+#   print "X Transaction Latency: ", sum(xLatency)/float(len(xLatency))
+# if len(fLatency) > 0:
+#   print "Average Latency (failure): ", sum(fLatency)/float(len(tLatency)-len(sLatency))
+#   print "Extra (failure): ", fExtra

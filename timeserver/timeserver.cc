@@ -23,6 +23,18 @@ TimeStampServer::newTimeStamp()
 }
 
 void
+TimeStampServer::LeaderUpcall(opnum_t opnum,
+                              const string &str1,
+                              bool &replicate,
+                              string &str2)
+{
+    Debug("Received Upcall: %lu, %s", opnum, str1.c_str());
+
+    // Get a new timestamp from the TimeStampServer
+    str2 = newTimeStamp();
+}
+
+void
 TimeStampServer::ReplicaUpcall(opnum_t opnum,
                                const string &str1,
                                string &str2)
