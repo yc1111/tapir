@@ -336,9 +336,10 @@ VRReplica::CloseBatch()
     }
     lastPrepare = p;
 
-    if (!(transport->SendMessageToAll(this, p))) {
-        RWarning("Failed to send prepare message to all replicas");
-    }
+    CommitUpTo(lastOp);
+    // if (!(transport->SendMessageToAll(this, p))) {
+    //     RWarning("Failed to send prepare message to all replicas");
+    // }
     lastBatchEnd = lastOp;
     
     resendPrepareTimeout->Reset();

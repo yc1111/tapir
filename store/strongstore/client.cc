@@ -159,6 +159,25 @@ Client::Prepare(uint64_t &ts)
 {
     int status;
 
+	// 0. get timestamp
+    if (mode == MODE_OCC) {
+        // Have to go to timestamp server
+        unique_lock<mutex> lk(cv_m);
+
+        Debug("Sending request to TimeStampServer");
+		transport.Timer(0, [=]() { 
+			tss->Invoke("", bind(&Client::tssCallback, this,
+					placeholders::_1,
+					placeholders::_2));
+		});
+        
+        Debug("Waiting for TSS reply");
+        cv.wait(lk);
+        std::cout << "tss reply: " << replica_reply << std::endl;
+        ts = stol(replica_reply, NULL, 10);
+        Debug("TSS reply received: %lu", ts);
+    }
+
     // 1. Send commit-prepare to all shards.
     Debug("PREPARE Transaction");
     list<Promise *> promises;
@@ -167,24 +186,6 @@ Client::Prepare(uint64_t &ts)
         Debug("Sending prepare to shard [%d]", p);
         promises.push_back(new Promise(PREPARE_TIMEOUT));
         bclient[p]->Prepare(Timestamp(),promises.back());
-    }
-
-    // In the meantime ... go get a timestamp for OCC
-    if (mode == MODE_OCC) {
-        // Have to go to timestamp server
-        unique_lock<mutex> lk(cv_m);
-
-        Debug("Sending request to TimeStampServer");
-	transport.Timer(0, [=]() { 
-		tss->Invoke("", bind(&Client::tssCallback, this,
-				     placeholders::_1,
-				     placeholders::_2));
-	    });
-        
-        Debug("Waiting for TSS reply");
-        cv.wait(lk);
-        ts = stol(replica_reply, NULL, 10);
-        Debug("TSS reply received: %lu", ts);
     }
 
     // 2. Wait for reply from all shards. (abort on timeout)

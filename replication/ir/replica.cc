@@ -23,7 +23,7 @@ IRReplica::IRReplica(transport::Configuration config, int myIdx,
     : config(std::move(config)), myIdx(myIdx), transport(transport), app(app),
       status(STATUS_NORMAL), view(0), latest_normal_view(0),
       // TODO: Take these filenames in via the command line?
-      persistent_view_info(config.replica(myIdx).host + ":" +
+      persistent_view_info("/data/yc/tapir/logs/" + config.replica(myIdx).host + ":" +
                            config.replica(myIdx).port + "_" +
                            std::to_string(myIdx) + ".bin"),
       // Note that a leader waits for DO-VIEW-CHANGE messages from f other

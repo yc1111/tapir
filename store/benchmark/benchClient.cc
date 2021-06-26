@@ -14,15 +14,31 @@
 
 using namespace std;
 
-// Function to pick a random key according to some distribution.
-int rand_key();
+//ycsb
+double theta = 0;
+size_t row_num = 100000;
+double zetan = 0;
+double zeta_2_theta = 0;
+double readperc, writeperc;
 
-bool ready = false;
-double alpha = -1;
-double *zipf;
+double zeta(uint32_t n) {
+  double sum = 0;
+  for(uint32_t i = 1; i <= n; ++i) {
+  sum += pow(1.0/i,theta);
+  }
+  return sum;
+}
 
-vector<string> keys;
-int nKeys = 100;
+uint32_t zipf(uint32_t n) {
+  double alpha = 1/(1 - theta);
+  double eta = (1 - pow(2.0 / n, 1 - theta)) /
+    (1 - zeta_2_theta / zetan);
+  double u = (double)(rand() % 10000000) / 10000000;
+  double uz = u*zetan;
+  if(uz < 1) return 1;
+  if(uz < 1 + pow(0.5,theta)) return 2;
+  return 1 + (uint32_t)(n * pow(eta*u - eta + 1, alpha));
+}
 
 int
 main(int argc, char **argv)
@@ -109,12 +125,6 @@ main(int argc, char **argv)
 
         case 'k': // Number of keys to operate on.
         {
-            char *strtolPtr;
-            nKeys = strtoul(optarg, &strtolPtr, 10);
-            if ((*optarg == '\0') || (*strtolPtr != '\0') ||
-                (nKeys <= 0)) {
-                fprintf(stderr, "option -k requires a numeric arg\n");
-            }
             break;
         }
 
@@ -145,7 +155,7 @@ main(int argc, char **argv)
         case 'z': // Zipf coefficient for key selection.
         {
             char *strtolPtr;
-            alpha = strtod(optarg, &strtolPtr);
+            theta = strtod(optarg, &strtolPtr);
             if ((*optarg == '\0') || (*strtolPtr != '\0'))
             {
                 fprintf(stderr,
@@ -213,21 +223,6 @@ main(int argc, char **argv)
         exit(0);
     }
 
-    // Read in the keys from a file.
-    string key, value;
-    ifstream in;
-    in.open(keysPath);
-    if (!in) {
-        fprintf(stderr, "Could not read keys from: %s\n", keysPath);
-        exit(0);
-    }
-    for (int i = 0; i < nKeys; i++) {
-        getline(in, key);
-        keys.push_back(key);
-    }
-    in.close();
-
-
     struct timeval t0, t1, t2, t3, t4;
 
     int nTransactions = 0;
@@ -245,6 +240,10 @@ main(int argc, char **argv)
     gettimeofday(&t0, NULL);
     srand(t0.tv_sec + t0.tv_usec);
 
+    row_num = 100000;
+    zetan = zeta(row_num);
+    zeta_2_theta = zeta(2);
+
     while (1) {
         gettimeofday(&t4, NULL);
         client->Begin();
@@ -254,7 +253,8 @@ main(int argc, char **argv)
         beginLatency += ((t1.tv_sec - t4.tv_sec)*1000000 + (t1.tv_usec - t4.tv_usec));
         
         for (int j = 0; j < tLen; j++) {
-            key = keys[rand_key()];
+            auto key = std::to_string(zipf(row_num));
+            string value;
 
             if (rand() % 100 < wPer) {
                 gettimeofday(&t3, NULL);
@@ -306,47 +306,3 @@ main(int argc, char **argv)
     return 0;
 }
 
-int rand_key()
-{
-    if (alpha < 0) {
-        // Uniform selection of keys.
-        return (rand() % nKeys);
-    } else {
-        // Zipf-like selection of keys.
-        if (!ready) {
-            zipf = new double[nKeys];
-
-            double c = 0.0;
-            for (int i = 1; i <= nKeys; i++) {
-                c = c + (1.0 / pow((double) i, alpha));
-            }
-            c = 1.0 / c;
-
-            double sum = 0.0;
-            for (int i = 1; i <= nKeys; i++) {
-                sum += (c / pow((double) i, alpha));
-                zipf[i-1] = sum;
-            }
-            ready = true;
-        }
-
-        double random = 0.0;
-        while (random == 0.0 || random == 1.0) {
-            random = (1.0 + rand())/RAND_MAX;
-        }
-
-        // binary search to find key;
-        int l = 0, r = nKeys, mid;
-        while (l < r) {
-            mid = (l + r) / 2;
-            if (random > zipf[mid]) {
-                l = mid + 1;
-            } else if (random < zipf[mid]) {
-                r = mid - 1;
-            } else {
-                break;
-            }
-        }
-        return mid;
-    } 
-}

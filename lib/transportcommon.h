@@ -99,7 +99,7 @@ public:
             return SendMessageInternal(src, kv->second, m, true);
         } else {
             // ...or by individual messages to every replica if not
-            const ADDR &srcAddr = dynamic_cast<const ADDR &>(src->GetAddress());
+            const ADDR &srcAddr = reinterpret_cast<const ADDR &>(src->GetAddress());
             for (auto & kv2 : replicaAddresses[cfg]) {
                 if (srcAddr == kv2.second) {
                     continue;

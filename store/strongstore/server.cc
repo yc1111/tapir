@@ -342,7 +342,7 @@ main(int argc, char **argv)
                 "only %d replicas defined\n", index, config.n);
     }
 
-    UDPTransport transport(0.0, 0.0, 0);
+    TCPTransport transport(0.0, 0.0, 0);
 
     strongstore::Server server(mode, skew, error);
     replication::vr::VRReplica replica(config, index, &transport, 1, &server);

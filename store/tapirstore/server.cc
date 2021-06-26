@@ -136,7 +136,7 @@ Server::UnloggedUpcall(const string &str1, string &str2)
 void
 Server::Sync(const std::map<opid_t, RecordEntry>& record)
 {
-    Panic("Unimplemented!");
+    // Panic("Unimplemented!");
 }
 
 std::map<opid_t, std::string>
@@ -144,7 +144,8 @@ Server::Merge(const std::map<opid_t, std::vector<RecordEntry>> &d,
               const std::map<opid_t, std::vector<RecordEntry>> &u,
               const std::map<opid_t, std::string> &majority_results_in_d)
 {
-    Panic("Unimplemented!");
+    // Panic("Unimplemented!");
+    return std::map<opid_t, std::string>();
 }
 
 void

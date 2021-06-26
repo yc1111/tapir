@@ -76,3 +76,4 @@ tags
 *.app
 
 logs/
+data/
